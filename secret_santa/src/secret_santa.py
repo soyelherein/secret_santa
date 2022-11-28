@@ -24,7 +24,7 @@ class Family:
         self.member_names = member_names
         self.db_con = dao_module.Dao()
 
-    def _prepare_exclusion(self, year: int):
+    def _prepare_exclusion(self, year):
         """_prepare_exclusion method that prepares the past matches to be excluded from
         matching in the current year.
 
@@ -39,7 +39,7 @@ class Family:
             already_matched_dict[giver].add(receiver)
         return already_matched_dict
 
-    def secret_santa_matcher(self, year : int =1990) -> Dict:
+    def secret_santa_matcher(self, year =1990) -> Dict:
         """Creates secret santa pairs among the family members.
         Returns gift giver and receiver pairs and any unmatched members
 
@@ -74,7 +74,7 @@ class Family:
                 )[0]
         if matched_pairs:
             self.db_con.store_to_db(table_name = 'secret_santa_pairs',
-             val = map(lambda x: (str(year),x[0],x[1]), matched_pairs.items()))
+             val = map(lambda x: (year,x[0],x[1]), matched_pairs.items()))
             return matched_pairs
         raise ValueError("No Matching pairs found")
 

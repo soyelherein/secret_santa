@@ -23,11 +23,11 @@ class Dao:
                 f"""CREATE TABLE IF NOT EXISTS
                 {table_name}({cls._table_columns.get(table_name)})"""
             )
-            print(table_name,val)
             cls._con.executemany(
                 f"INSERT INTO {table_name} VALUES(?, ?, ?)",
                     list(val),
             )
+        return True
 
 
     @classmethod
@@ -43,9 +43,7 @@ class Dao:
                     f"""SELECT gift_giver, gift_receiver
                     FROM secret_santa_pairs WHERE match_year > {year-3}"""
                 )
-                print("showing results from db")
                 result = res.fetchall()
-                print(result)
                 return result
             return ()
 

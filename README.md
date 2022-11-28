@@ -10,7 +10,7 @@ Obviously, a person cannot be their own Secret Santa.
 ### Running appication
 
 ```python
-python3 -m app
+python3 -m secret_santa
 ```
 
 ```unix
@@ -20,8 +20,20 @@ Please enter the names of family members
 santa
 banta
 alexa
+siri
 
-Matched pairs: {'banta': 'santa', 'alexa': 'banta', 'santa': 'alexa'}
+Matched pairs: {'banta': 'alexa', 'alexa': 'santa', 'santa': 'siri', 'siri': 'banta'}
+Press Y key to simulate match for 2023
+y
+Matched pairs: {'banta': 'siri', 'alexa': 'banta', 'santa': 'alexa', 'siri': 'santa'}
+Press Y key to simulate match for 2024
+y
+Matched pairs: {'banta': 'santa', 'alexa': 'siri', 'santa': 'banta', 'siri': 'alexa'}
+Press Y key to simulate match for 2025
+y
+Matched pairs: {'banta': 'alexa', 'alexa': 'santa', 'santa': 'siri', 'siri': 'banta'}
+Press Y key to simulate match for 2026
+N
 ```
 
 ### Testing
@@ -32,7 +44,7 @@ python3 -m unittest
 ```unix
 .....
 ----------------------------------------------------------------------
-Ran 5 tests in 0.003s
+Ran 7 tests in 0.007s
 
 OK
 ```
