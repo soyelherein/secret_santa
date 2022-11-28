@@ -35,7 +35,7 @@ class TestSecretSanta(unittest.TestCase):
         self.assertEqual(self.family.unmatched_members({"a": "b"}), {"c"})
 
     @patch("builtins.print")
-    @patch("app.src.secret_santa.Main._read_input")
+    @patch("secret_santa.src.secret_santa.Main._read_input")
     def test_get_family_details(self, mock_read_input, mock_print):
         """test_get_family_details test get_family_details
 
@@ -49,7 +49,7 @@ class TestSecretSanta(unittest.TestCase):
         )
 
     @patch("builtins.print")
-    @patch('app.src.secret_santa.Main._read_input')
+    @patch('secret_santa.src.secret_santa.Main._read_input')
     def test_two_inputs_get_family_details(self, mock_read_input, mock_print):
         """test_two_inputs_get_family_details test get_family_details
 
