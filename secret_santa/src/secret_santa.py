@@ -9,9 +9,11 @@
     Obviously, a person cannot be their own Secret Santa.
 """
 
+from collections import Counter, defaultdict
+from datetime import date
 from random import choices
-from typing import Set, Dict
-from collections import Counter
+from typing import Dict, Set
+from ..src import dao_module
 
 
 class Family:
@@ -20,8 +22,24 @@ class Family:
     def __init__(self, member_names: Set[str]):
         """Constructor method"""
         self.member_names = member_names
+        self.db_con = dao_module.Dao()
 
-    def secret_santa_matcher(self) -> Dict:
+    def _prepare_exclusion(self, year):
+        """_prepare_exclusion method that prepares the past matches to be excluded from
+        matching in the current year.
+
+        :param year: matching year
+        :type year: int
+        :return: already_matched_dict
+        :rtype: dict
+        """
+        already_matched = self.db_con.read_gifts_from_db(year)
+        already_matched_dict = defaultdict(set)
+        for giver, receiver in already_matched:
+            already_matched_dict[giver].add(receiver)
+        return already_matched_dict
+
+    def secret_santa_matcher(self, year =1990) -> Dict:
         """Creates secret santa pairs among the family members.
         Returns gift giver and receiver pairs and any unmatched members
 
@@ -29,29 +47,38 @@ class Family:
         :rtype: Dict
         """
         matched_pairs = dict()  # who got gift from whom {gift_giver:gift_receiver}
+        # reading the past matches, that would be excluded from matching process
+        past_matched_pairs = self._prepare_exclusion(
+            year
+        )  # preparing past gift history
         for member in self.member_names:
             # excluding gift giver to accidentally receiving it from himself/herself,
             # excluding people who have already received gifts.
-            eligible_gift_receivers = list(
-                self.member_names.difference(
-                    {member}.union(set(matched_pairs.values()))
-                )
+            eligible_gift_receivers = self.member_names.difference(
+                {member}.union(set(matched_pairs.values()))
             )
-            # putting more weights who has not given or recieved gift yet
+
+            eligible_gift_receivers_after_exclusion = list(
+                eligible_gift_receivers.difference(past_matched_pairs.get(member, {}))
+            )
+            # putting more weights who has not given or received gift yet
             # this is to ensure the system maximize the match by diversifying the match
             weights_of_gift_receivers = [
                 0 if eligible_gift_receiver in matched_pairs else 1
-                for eligible_gift_receiver in eligible_gift_receivers
+                for eligible_gift_receiver in eligible_gift_receivers_after_exclusion
             ]
-            if eligible_gift_receivers:
+            if eligible_gift_receivers_after_exclusion:
                 matched_pairs[member] = choices(
-                    eligible_gift_receivers, weights=weights_of_gift_receivers
+                    eligible_gift_receivers_after_exclusion,
+                    weights=weights_of_gift_receivers,
                 )[0]
         if matched_pairs:
+            self.db_con.store_to_db(table_name = 'secret_santa_pairs',
+             val = map(lambda x: (year,x[0],x[1]), matched_pairs.items()))
             return matched_pairs
         raise ValueError("No Matching pairs found")
 
-    def unmatched_members(self, matched_pairs) -> Set:
+    def unmatched_members(self, matched_pairs: dict) -> Set:
         """Returns the unmatched members
         :param: matched pairs
         :type: Dict
@@ -113,13 +140,19 @@ class Main:
     @classmethod
     def run_secret_santa(cls) -> None:
         """Method to run the application"""
+        generate_match_flag = "y"
+        year = date.today().year
         family_member_names = cls.get_family_details()
         family = Family(family_member_names)
-        matched_pairs = family.secret_santa_matcher()
-        print(f"Matched pairs: {matched_pairs}")
-        unmatched_members = family.unmatched_members(matched_pairs)
-        if unmatched_members:
-            print(f"Unmatched members: {unmatched_members}")
+        while generate_match_flag in ("y", "Y"):
+            matched_pairs = family.secret_santa_matcher(year=year)
+            print(f"Matched pairs: {matched_pairs}")
+            unmatched_members = family.unmatched_members(matched_pairs)
+            if unmatched_members:
+                print(f"Unmatched members: {unmatched_members}")
+            year += 1
+            print(f"Press Y key to simulate match for {year}")
+            generate_match_flag = cls._read_input()
         return True
 
 
